@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Virtualenv
+env/
+venv/
+ENV/
+.venv/
+
+# Flask uploads
+uploads/
+*.xlsx
+
+# ExifTool 
+exiftool.exe
+exiftool_files/
+
+# System files
+.DS_Store
+Thumbs.db

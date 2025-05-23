@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>EXIF2TWD97 上傳工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title text-center">📷 EXIF 資料轉換工具</h3>
+                    <p class="text-muted text-center mb-4">可多次上傳圖片，最後整合成一份 Excel</p>
+
+                    <div class="mb-3">
+                        <label class="form-label">選擇圖片或 ZIP 檔：</label>
+                        <input type="file" id="files" name="files" multiple class="form-control" required>
+                    </div>
+
+                    <div class="progress mb-3" style="height: 20px; display: none;">
+                        <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%">0%</div>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button id="uploadBtn" class="btn btn-primary">📤 上傳本次圖片</button>
+                    </div>
+
+                    <div id="uploadStatus" class="text-center text-success fw-bold"></div>
+                    <div id="imageCount" class="text-center text-muted mt-2" style="font-size: 0.9rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-4">
+    <div class="col-auto">
+        <a href="/map_preview" class="btn btn-success btn-lg" id="goPreviewBtn" style="display: none; width: 250px;">
+            ✅ 解析並預覽所有上傳
+        </a>
+    </div>
+</div>
+
+
+<script>
+document.getElementById("uploadBtn").onclick = function () {
+    const files = document.getElementById("files").files;
+    if (files.length === 0) {
+        alert("請選擇檔案！");
+        return;
+    }
+
+    const formData = new FormData();
+    for (let file of files) {
+        formData.append("files", file);
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/upload", true);
+
+    const progress = document.querySelector(".progress");
+    const bar = document.getElementById("progressBar");
+    progress.style.display = "block";
+
+    xhr.upload.onprogress = function (e) {
+        if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            bar.style.width = percent + "%";
+            bar.textContent = percent + "%";
+        }
+    };
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            document.getElementById("uploadStatus").textContent = "✅ 上傳成功，可繼續上傳或解析預覽";
+            bar.style.width = "0%";
+            bar.textContent = "0%";
+            document.getElementById("files").value = "";
+            document.getElementById("goPreviewBtn").style.display = "block";
+
+            // 更新圖片張數顯示
+            fetch("/map_preview?count_only=1")
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("imageCount").textContent = `📸 已累積上傳 ${data.count} 張圖片`;
+                });
+        } else {
+            document.getElementById("uploadStatus").textContent = "❌ 上傳失敗！";
+        }
+    };
+
+    xhr.send(formData);
+};
+</script>
+</body>
+</html>
+
+
+
+
